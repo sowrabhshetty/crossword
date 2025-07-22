@@ -1,4 +1,4 @@
-# crossword gam# 🍻 PubGolf-Themed Crossword Game
+# 🍻 PubGolf-Themed Crossword Game
 An interactive, mobile-responsive crossword puzzle based on drinking, Bangalore slang, and pub culture. Strike off the words as you find them — complete with visual feedback and a secret word to discover!
 # 🎮 Features
 - ✅ 14×14 interactive grid
