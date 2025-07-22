@@ -181,19 +181,23 @@ function handleSelectionEnd() {
 
 // Attach mouse events
 grid.addEventListener('mousedown', e => {
+  e.preventDefault();
   if (e.target.classList.contains("cell")) handleCellStart(e.target);
 });
 grid.addEventListener('mouseenter', e => {
+  e.preventDefault();
   if (e.target.classList.contains("cell") && isSelecting) handleCellEnter(e.target);
 }, true);
 document.addEventListener('mouseup', handleSelectionEnd);
 
 // Attach touch events
 grid.addEventListener('touchstart', e => {
+  e.preventDefault();
   const cell = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
   if (cell && cell.classList.contains("cell")) handleCellStart(cell);
 });
 grid.addEventListener('touchmove', e => {
+  e.preventDefault();
   const cell = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
   if (cell && cell.classList.contains("cell")) handleCellEnter(cell);
 });
