@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Crossword Game</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Crossword Game</h1>
-  <div class="input-box">
-    <input type="text" id="wordInput" placeholder="Type a word...">
-    <button id="submitBtn">Submit</button>
-  </div>
+  
+  <!-- Crossword Grid Container -->
   <div id="grid" class="grid"></div>
+  
+  <!-- Word List -->
   <div class="word-list">
     <h2>Words to Find:</h2>
     <ul id="wordList"></ul>
   </div>
+  
+  <!-- Canvas for confetti animation -->
   <canvas id="confetti-canvas"></canvas>
+
   <script src="script.js"></script>
 </body>
 </html>
