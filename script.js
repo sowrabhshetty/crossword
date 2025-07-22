@@ -1,9 +1,8 @@
 // script.js
+
 const gridSize = 14;
 const grid = document.getElementById("grid");
 const wordList = document.getElementById("wordList");
-const input = document.getElementById("wordInput");
-const submitBtn = document.getElementById("submitBtn");
 const canvas = document.getElementById("confetti-canvas");
 
 const words = [
@@ -15,9 +14,12 @@ const words = [
 let placedWords = new Set();
 
 function createGrid() {
+  grid.innerHTML = ""; // clear grid if reloading
+
   for (let i = 0; i < gridSize * gridSize; i++) {
     const cell = document.createElement("div");
     cell.classList.add("cell");
+    cell.dataset.index = i;
     grid.appendChild(cell);
   }
 }
@@ -48,12 +50,14 @@ function placeWord(word) {
     const dir = randomDirection();
     const row = Math.floor(Math.random() * gridSize);
     const col = Math.floor(Math.random() * gridSize);
+
     if (canPlace(word, row, col, dir)) {
       for (let i = 0; i < word.length; i++) {
         const idx = dir === "H" ? row * gridSize + col + i : (row + i) * gridSize + col;
         const cell = grid.children[idx];
         cell.textContent = word[i];
-        cell.dataset.word = word;
+        if (!cell.dataset.words) cell.dataset.words = word;
+        else cell.dataset.words += `,${word}`;
       }
       return;
     }
@@ -70,44 +74,138 @@ function fillRandomLetters() {
 }
 
 function populateWordList() {
-  words.forEach(w => {
-    const li = document.createElement("li");
-    li.textContent = w;
-    li.id = `word-${w}`;
-    wordList.appendChild(li);
-  });
+  wordList.innerHTML = "";
+  words
+    .filter(w => w !== "JYOTHI") // hides "JYOTHI" from the list
+    .forEach(w => {
+      const li = document.createElement("li");
+      li.textContent = w;
+      li.id = `word-${w}`;
+      wordList.appendChild(li);
+    });
 }
+
 
 function highlightWord(word) {
   for (let cell of grid.children) {
-    if (cell.dataset.word === word) {
+    if (cell.dataset.words && cell.dataset.words.split(",").includes(word)) {
       cell.classList.add("highlight");
     }
   }
 }
 
-function handleSubmit() {
-  const guess = input.value.trim().toUpperCase();
-  if (words.includes(guess) && !placedWords.has(guess)) {
-    placedWords.add(guess);
-    highlightWord(guess);
-    document.getElementById(`word-${guess}`).classList.add("struck");
-    if (guess === "JYOTHI") launchConfetti();
+function launchSecretEffect() {
+  // Show dramatic fire popup for "JYOTHI"
+  let announce = document.getElementById("secret-announce");
+  if (!announce) {
+    announce = document.createElement("div");
+    announce.id = "secret-announce";
+    document.body.appendChild(announce);
   }
-  input.value = "";
+
+  announce.innerHTML = `
+    <div class="fire-announce">
+      <span class="fire-emoji">🔥🔥🔥 SECRET WORD FOUND 🔥🔥🔥</span><br>
+      <span style="font-size:2.5rem; font-weight: bold;">JYOTHI</span>
+      <div style="font-size:2rem;">🎉🥳🔥🎆💥</div>
+    </div>
+  `;
+
+  announce.style.display = "block";
+  announce.classList.add("show");
+
+  if (typeof JSConfetti !== "undefined" && canvas) {
+    const jsConfetti = new JSConfetti({ canvas });
+    jsConfetti.addConfetti({
+      emojis: ["🔥", "🎉", "🥳", "💥", "🎆", "🎊"],
+      confettiNumber: 150,
+      confettiRadius: 10,
+      emojiSize: 40,
+    });
+  }
+
+  setTimeout(() => {
+    announce.classList.remove("show");
+    announce.style.display = "none";
+    announce.innerHTML = "";
+  }, 5000);
 }
 
-function launchConfetti() {
-  const jsConfetti = new JSConfetti({ canvas });
-  jsConfetti.addConfetti({ emojis: ["🍻", "🎉", "🥳", "💃"] });
+// --- Selection logic ---
+
+let isSelecting = false;
+let selection = [];
+
+function clearHighlights() {
+  for (let cell of grid.children) {
+    cell.classList.remove("selected");
+  }
+  selection = [];
 }
 
-submitBtn.addEventListener("click", handleSubmit);
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") handleSubmit();
+function addToSelection(cell) {
+  if (!cell.classList.contains("cell")) return;
+  if (!selection.includes(cell)) {
+    selection.push(cell);
+    cell.classList.add("selected");
+  }
+}
+
+function handleCellStart(cell) {
+  isSelecting = true;
+  clearHighlights();
+  addToSelection(cell);
+}
+
+function handleCellEnter(cell) {
+  if (!isSelecting) return;
+  addToSelection(cell);
+}
+
+function handleSelectionEnd() {
+  if (!isSelecting || selection.length === 0) return;
+  isSelecting = false;
+
+  const word = selection.map(cell => cell.textContent).join('');
+  if (words.includes(word) && !placedWords.has(word)) {
+    placedWords.add(word);
+    highlightWord(word);
+    const li = document.getElementById(`word-${word}`);
+    if (li) li.classList.add("struck");
+
+    if (word === "JYOTHI") launchSecretEffect();
+  }
+
+  setTimeout(clearHighlights, 200);
+}
+
+// Attach mouse events
+grid.addEventListener('mousedown', e => {
+  if (e.target.classList.contains("cell")) handleCellStart(e.target);
+});
+grid.addEventListener('mouseenter', e => {
+  if (e.target.classList.contains("cell") && isSelecting) handleCellEnter(e.target);
+}, true);
+document.addEventListener('mouseup', handleSelectionEnd);
+
+// Attach touch events
+grid.addEventListener('touchstart', e => {
+  const cell = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+  if (cell && cell.classList.contains("cell")) handleCellStart(cell);
+});
+grid.addEventListener('touchmove', e => {
+  const cell = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+  if (cell && cell.classList.contains("cell")) handleCellEnter(cell);
+});
+document.addEventListener('touchend', handleSelectionEnd);
+
+window.addEventListener("blur", () => {
+  isSelecting = false;
+  clearHighlights();
 });
 
-// Init
+// --- Initialize ---
+
 createGrid();
 words.forEach(placeWord);
 fillRandomLetters();
