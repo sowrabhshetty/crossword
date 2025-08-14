@@ -19,7 +19,3 @@ Budweiser, Kingfisher, OMR, Macha, Whatrasudeep, Chin-lungs, Beer, Tequila, Whis
    - `script.js`
    - 
 3. Open `index.html` in a browser.
-## 🧱 Folder Structure
-
-
-f
