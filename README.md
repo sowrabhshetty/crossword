@@ -17,5 +17,4 @@ Budweiser, Kingfisher, OMR, Macha, Whatrasudeep, Chin-lungs, Beer, Tequila, Whis
    - `index.html`
    - `style.css`
    - `script.js`
-   - 
 3. Open `index.html` in a browser.
